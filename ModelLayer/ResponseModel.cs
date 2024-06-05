@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace ModelLayer
 {
-    internal class ResponseModel(bool status, string message, string data)
+    public class ResponseModel
     {
-        public bool status { get; set; } = status;
+        public bool status { get; set; } = true;
 
-        public string message { get; set; } = message;
+        public string message { get; set; } 
 
-        public string data { get; set; } = data;
+        public string data { get; set; }
 
     }
 }

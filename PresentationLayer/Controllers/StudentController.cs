@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using ModelLayer;
+using RepositoryLayer.Exceptions;
 
 namespace PresentationLayer.Controllers
 {
@@ -11,54 +12,108 @@ namespace PresentationLayer.Controllers
     public class StudentController : ControllerBase
     {
             private readonly IStudentService studentService;
+            private readonly ResponseModel responseModel;
             public StudentController(IStudentService studentService)
             {
                 this.studentService = studentService;
+                this.responseModel = new ResponseModel();
             }
             
             // GET: api/<StudentController>
             [HttpGet]
-            public IActionResult GetStudents()
+            public ResponseModel GetStudents()
             {
-                var students = studentService.GetAllStudents();
-                if (students == null) { return NotFound("No Students Found"); }
-                return Ok(students);
+                try
+                {
+                    var students = studentService.GetAllStudents();
+                    responseModel.message = "Students retrieved successfully.";
+                    string studentsAsString = string.Join(" | ", students.Select(s => s.ToString()));
+                responseModel.data = studentsAsString;
+                }
+                catch (UserException e) 
+                {
+                    responseModel.message = e.Message;
+                    responseModel.status = false;
+                    responseModel.data = "No Data Found";
+                }
+            return responseModel;
             }
 
-            // GET api/<StudentController>/5
-            [HttpGet("{id}")]
-            public IActionResult GetOneStudent(int id)
+        // GET api/<StudentController>/5
+        [HttpGet("{id}")]
+        public ResponseModel GetOneStudent(int id)
+        { 
+            try
             {
                 var student = studentService.GetStudent(id);
-                if (student == null) { return NotFound("No Student with such Id Found"); }
-                return Ok(student);
+                responseModel.message = "Student retrieved successfully.";
+                responseModel.data = student.ToString();
             }
+            catch (UserException e)
+            {
+                responseModel.message = e.Message;
+                responseModel.status = false;
+                responseModel.data = null;
+            }
+            return responseModel;
+        }
 
             // POST api/<StudentController>
-            [HttpPost]
-            public IActionResult PostStudent([FromBody] StudentModel Studentmodel)
+        [HttpPost]
+        public ResponseModel PostStudent([FromBody] StudentModel Studentmodel)
+        {
+            try
             {
-                 var student = studentService.AddStudent(Studentmodel);
-                 if (student == null) { return NotFound("Not able to Add Student"); }
-                 return Ok(student);
+                var student = studentService.AddStudent(Studentmodel);
+                responseModel.message = "Student Added successfully.";
+                responseModel.data = student.ToString();
             }
+            catch (UserException e)
+            {
+                responseModel.message = e.Message;
+                responseModel.status = false;
+                responseModel.data = null;
+            }
+            return responseModel;
+
+        }
 
             // PUT api/<StudentController>/5
-            [HttpPut("{id}")]
-            public IActionResult EditStudent(int id,[FromBody] StudentModel Studentmodel)
+        [HttpPut("{id}")]
+        public ResponseModel EditStudent(int id,[FromBody] StudentModel Studentmodel)
+        {
+            try
             {
-                var student = studentService.UpdateStudent(id,Studentmodel);
-            if (student == null) { return NotFound("Not able to Edit Student"); }
-                return Ok(student);
+                var student = studentService.UpdateStudent(id, Studentmodel);
+                responseModel.message = "Student Edited successfully.";
+                responseModel.data = student.ToString();
             }
+            catch (UserException e)
+            {
+                responseModel.message = e.Message;
+                responseModel.status = false;
+                responseModel.data = null;
+            }
+            return responseModel;
+        }
 
             // DELETE api/<StudentController>/5
-            [HttpDelete("{id}")]
-            public IActionResult RemoveStudent(int id)
+        [HttpDelete("{id}")]
+        public ResponseModel RemoveStudent(int id)
+        {
+            try
             {
                 var student = studentService.DeleteStudent(id);
-            if (student == null) { return NotFound("Not able to Remove Student"); }
-                return Ok(student);
+                responseModel.message = "Student Deleted successfully.";
+                responseModel.data = student.ToString();
             }
+            catch (UserException e)
+            {
+                responseModel.message = e.Message;
+                responseModel.status = false;
+                responseModel.data = null;
+            }
+            return responseModel;
+        }
     }
 }
