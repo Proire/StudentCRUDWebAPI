@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RepositoryLayer.DBContexts;
 using RepositoryLayer.Entities;
+using RepositoryLayer.Exceptions;
 using RepositoryLayer.Interface;
 using System;
 using System.Collections.Generic;
@@ -20,8 +22,18 @@ namespace RepositoryLayer.Repository
         }
         public Student AddStudent(Student Student)
         {
-            context.Students.Add(Student);
-            context.SaveChanges();
+            try
+            {
+                context.Students.Add(Student);
+                context.SaveChanges();
+            }
+            catch(UserException e)
+            {
+                
+                Console.WriteLine(e.Message);
+                throw;
+            }
+            
             return Student;
         }
 
@@ -33,16 +45,22 @@ namespace RepositoryLayer.Repository
                 context.Students.Remove(Student);
                 context.SaveChanges();
             }
+            else
+                throw new UserException($"Student with ID {Id} not found.");
             return Student;
         }
         public IEnumerable<Student> GetAllStudents()
         {
-            return context.Students;
+            var students = context.Students;
+            if (students.IsNullOrEmpty()) { throw new UserException($"No Students Found"); }
+            return students;
         }
 
         public Student GetStudent(int Id)
         {
-            return context.Students.Find(Id);
+            var student = context.Students.Find(Id);
+            if (student != null) { return student; }
+            else { throw new UserException($"Student with ID { Id } not found."); }
         }
 
         public Student UpdateStudent(int id,Student updatedStudent)
@@ -55,9 +73,11 @@ namespace RepositoryLayer.Repository
             {
                 existingStudent.Prn = id;
                 existingStudent.Name = updatedStudent.Name;
-             existingStudent.Email = updatedStudent.Email;
-                    existingStudent.Address = updatedStudent.Address;
+                existingStudent.Email = updatedStudent.Email;
+                existingStudent.Address = updatedStudent.Address;
             }
+            else
+                throw new UserException($"Student with ID { id } not found.");
 
             // Save the changes to the database
             context.SaveChanges();
