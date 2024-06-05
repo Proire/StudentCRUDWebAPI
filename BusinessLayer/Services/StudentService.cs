@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Interface;
+using Microsoft.IdentityModel.Tokens;
 using ModelLayer;
 using RepositoryLayer.Entities;
 using RepositoryLayer.Interface;
@@ -15,10 +16,15 @@ namespace BusinessLayer.Services
        
         public IEnumerable<StudentModel> GetAllStudents()
         {
-            List<StudentModel> students = new List<StudentModel>();
-            foreach(Student student in studentRepository.GetAllStudents())
+            var currentstudents = studentRepository.GetAllStudents();
+            List<StudentModel> students = null;
+            if (!currentstudents.IsNullOrEmpty())
             {
-                students.Add(new StudentModel(student.Name,student.Address,student.Email));
+                students = new List<StudentModel>();
+                foreach (Student student in currentstudents)
+                {
+                    students.Add(new StudentModel(student.Name, student.Address, student.Email));
+                }
             }
             return students;
         }
@@ -26,27 +32,36 @@ namespace BusinessLayer.Services
         public StudentModel GetStudent(int id)
         {
             Student student = studentRepository.GetStudent(id);
-            return new StudentModel(student.Name, student.Address, student.Email);
+            StudentModel model = null;
+            if (student != null)
+                model = new StudentModel(student.Name, student.Address, student.Email);
+            return model;
         }
        
         public StudentModel AddStudent(StudentModel studentModel)
         {
             Student student = new Student(studentModel.Name, studentModel.Address, studentModel.Email);
             Student Addedstudent = studentRepository.AddStudent(student);
-            return new StudentModel(Addedstudent.Name, Addedstudent.Address, Addedstudent.Email);
+            if(Addedstudent != null)
+                return new StudentModel(Addedstudent.Name, Addedstudent.Address, Addedstudent.Email);
+            return null;
         }
 
         public StudentModel UpdateStudent(int id,StudentModel studentModel)
         {
             Student student = new Student(studentModel.Name, studentModel.Address, studentModel.Email);
             Student updatedstudent = studentRepository.UpdateStudent(id,student);
-            return new StudentModel(updatedstudent.Name, updatedstudent.Address, updatedstudent.Email);
+            if(updatedstudent != null)
+                return new StudentModel(updatedstudent.Name, updatedstudent.Address, updatedstudent.Email);
+            return null;
         }
 
         public StudentModel DeleteStudent(int id)
         {
             Student deletedstudent = studentRepository.DeleteStudent(id);
-            return new StudentModel(deletedstudent.Name, deletedstudent.Address, deletedstudent.Email);
+            if(deletedstudent != null)
+                return new StudentModel(deletedstudent.Name, deletedstudent.Address, deletedstudent.Email);
+            return null;
         }
     }
 }

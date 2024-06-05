@@ -1,13 +1,15 @@
 using BusinessLayer.Interface;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using ModelLayer;
 
 namespace PresentationLayer.Controllers
 {
-        [Route("api/[controller]")]
-        [ApiController]
-        public class StudentController : ControllerBase
-        {
+    [Route("api/[controller]")]
+    [ApiController]
+    public class StudentController : ControllerBase
+    {
             private readonly IStudentService studentService;
             public StudentController(IStudentService studentService)
             {
@@ -16,37 +18,47 @@ namespace PresentationLayer.Controllers
             
             // GET: api/<StudentController>
             [HttpGet]
-            public IEnumerable<StudentModel> GetStudents()
+            public IActionResult GetStudents()
             {
-                return studentService.GetAllStudents();
+                var students = studentService.GetAllStudents();
+                if (students == null) { return NotFound("No Students Found"); }
+                return Ok(students);
             }
 
             // GET api/<StudentController>/5
             [HttpGet("{id}")]
-            public StudentModel GetOneStudent(int id)
+            public IActionResult GetOneStudent(int id)
             {
-                return studentService.GetStudent(id);
+                var student = studentService.GetStudent(id);
+                if (student == null) { return NotFound("No Student with such Id Found"); }
+                return Ok(student);
             }
 
             // POST api/<StudentController>
             [HttpPost]
-            public StudentModel PostStudent([FromBody] StudentModel Studentmodel)
+            public IActionResult PostStudent([FromBody] StudentModel Studentmodel)
             {
-                return studentService.AddStudent(Studentmodel);
+                 var student = studentService.AddStudent(Studentmodel);
+                 if (student == null) { return NotFound("Not able to Add Student"); }
+                 return Ok(student);
             }
 
             // PUT api/<StudentController>/5
             [HttpPut("{id}")]
-            public StudentModel EditStudent(int id,[FromBody] StudentModel Studentmodel)
+            public IActionResult EditStudent(int id,[FromBody] StudentModel Studentmodel)
             {
-                return studentService.UpdateStudent(id,Studentmodel);
+                var student = studentService.UpdateStudent(id,Studentmodel);
+            if (student == null) { return NotFound("Not able to Edit Student"); }
+                return Ok(student);
             }
 
             // DELETE api/<StudentController>/5
             [HttpDelete("{id}")]
-            public StudentModel RemoveStudent(int id)
+            public IActionResult RemoveStudent(int id)
             {
-                return studentService.DeleteStudent(id);
+                var student = studentService.DeleteStudent(id);
+            if (student == null) { return NotFound("Not able to Remove Student"); }
+                return Ok(student);
             }
-        }
+    }
 }
